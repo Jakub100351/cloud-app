@@ -1,5 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CloudBackend.DTOs; // Twoje DTOsy
 
 namespace Backend.Controllers
 {
@@ -15,30 +19,70 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _context.Tasks.ToListAsync());
+        public async Task<ActionResult<IEnumerable<TaskReadDto>>> GetAll()
+        {
+            var tasks = await _context.Tasks.ToListAsync();
+            
+            // MAPOWANIE: Bierzemy 'Title' z bazy i wrzucamy do 'Name' w DTO
+            var tasksDto = tasks.Select(t => new TaskReadDto
+            {
+                Id = t.Id,
+                Name = t.Title, 
+                IsCompleted = t.IsCompleted
+            });
+            return Ok(tasksDto);
+        }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<TaskReadDto>> GetById(int id)
         {
             var task = await _context.Tasks.FindAsync(id);
-            if (task == null) return NotFound(new { message = "Nie znaleziono zadania (404)" });
-            return Ok(task);
+            if (task == null) return NotFound(); 
+            
+            return Ok(new TaskReadDto 
+            { 
+                Id = task.Id, 
+                Name = task.Title, // MAPOWANIE
+                IsCompleted = task.IsCompleted 
+            });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(TaskItem task)
+        public async Task<ActionResult<TaskReadDto>> Create(TaskCreateDto taskDto)
         {
-            if (string.IsNullOrEmpty(task.Title)) return BadRequest("Tytuł wymagany");
-            _context.Tasks.Add(task);
+            // Używamy poprawnej klasy: TaskItem
+            var newTask = new TaskItem 
+            {
+                Title = taskDto.Name, // MAPOWANIE z DTO do bazy
+                IsCompleted = false 
+            };
+
+            _context.Tasks.Add(newTask);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
+
+            var readDto = new TaskReadDto
+            {
+                Id = newTask.Id,
+                Name = newTask.Title,
+                IsCompleted = newTask.IsCompleted
+            };
+
+            return CreatedAtAction(nameof(GetById), new { id = readDto.Id }, readDto);
         }
 
+        // Używamy TaskReadDto również do Update'a, żeby API w ogóle nie przyjmowało TaskItem (wymóg prowadzącego)
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, TaskItem task)
+        public async Task<IActionResult> Update(int id, TaskReadDto taskDto)
         {
-            if (id != task.Id) return BadRequest("Niezgodność ID (400)");
-            _context.Entry(task).State = EntityState.Modified;
+            if (id != taskDto.Id) return BadRequest("Niezgodność ID");
+            
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null) return NotFound();
+
+            // Aktualizacja encji
+            task.Title = taskDto.Name;
+            task.IsCompleted = taskDto.IsCompleted;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -48,6 +92,7 @@ namespace Backend.Controllers
         {
             var task = await _context.Tasks.FindAsync(id);
             if (task == null) return NotFound();
+            
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
             return NoContent();

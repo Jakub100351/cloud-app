@@ -3,6 +3,16 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
+// --- ZAKLĘCIE NA CORS (Pozwala Reactowi gadać z API) ---
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact", policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
+// -------------------------------------------------------
+
 // ZADANIE 4.2: Połączenie z kontenerem bazy danych
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Host=db;Port=5432;Database=TaskDb;Username=postgres;Password=postgres";
@@ -11,6 +21,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
+
+// --- ODPALAMY CORS ---
+app.UseCors("AllowReact");
+// ---------------------
 
 // To upewni się, że baza danych zostanie automatycznie stworzona po uruchomieniu!
 using (var scope = app.Services.CreateScope())

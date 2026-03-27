@@ -1,0 +1,5 @@
+{
+    "appService.preDeployTask": "publish-release",
+    "appService.deploySubpath": ".",
+    "appService.defaultWebAppToDeploy": "/subscriptions/2bfc8f98-a1af-48e1-ad51-72657c1b8dc0/resourceGroups/appsvc_windows_francecentral_basic/providers/Microsoft.Web/sites/backend-kuba"
+}

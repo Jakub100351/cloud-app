@@ -4,9 +4,9 @@ using Amazon;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
+
+// Pobranie sekretu z AWS
 var client = new AmazonSecretsManagerClient(RegionEndpoint.EUCentral1);
 
 var request = new GetSecretValueRequest
@@ -16,36 +16,18 @@ var request = new GetSecretValueRequest
 
 var response = await client.GetSecretValueAsync(request);
 
-string connectionString = response.SecretString;
-
-builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
-
-
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-
+// Ustawienie connection stringa
+var connectionString = response.SecretString;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-
     options.UseSqlServer(connectionString));
-
-
 
 builder.Services.AddControllers();
 
-
-
 var app = builder.Build();
 
-
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
-
 
 app.Run();

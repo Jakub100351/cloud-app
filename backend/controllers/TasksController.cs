@@ -29,7 +29,23 @@ namespace Backend.Controllers
         {
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "UPDATED OK 🔥" });
+            return Ok(new { message = "UPDATED OK" });
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTask(int id)
+        {
+            var task = await _context.Tasks.FindAsync(id);
+
+                if (task == null)
+        {
+        return NotFound();
+        }
+
+    _context.Tasks.Remove(task);
+    await _context.SaveChangesAsync();
+
+    return NoContent();
+}
     }
 }

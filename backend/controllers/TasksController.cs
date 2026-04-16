@@ -29,8 +29,7 @@ namespace Backend.Controllers
         {
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
-            task.Name = task.Name + " UPDATED :)";
-            return Ok(task);
+            return Ok(new { message = "UPDATED OK 🔥" });
         }
     }
 }

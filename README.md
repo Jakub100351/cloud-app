@@ -1,25 +1,47 @@
-Nagłówek z nazwą Twojego projektu, by Twoje imię i nazwisko, nr studenta
-cloud-app by jakub kolodynski, 100351
+# cloud-app by Jakub Kołodyński, 100351
 
-## Deklaracja Architektury (Mapowanie Azure)
+## Opis projektu
+Aplikacja backendowa stworzona w technologii .NET 8, wdrożona w chmurze AWS.  
+Projekt wykorzystuje AWS Secrets Manager do przechowywania danych wrażliwych oraz GitHub Actions do automatyzacji procesu CI/CD.
 
-Ten projekt został zaplanowany z myślą o usługach PaaS (Platform as a Service) w chmurze Azure.
+---
 
-| Warstwa | Komponent Lokalny | Usługa Azure |
+## Architektura (AWS)
 
-| :--- | :--- | :--- |
+| Warstwa | Komponent | Usługa |
+|--------|----------|--------|
+| **Application** | API (.NET 8) | AWS Elastic Beanstalk |
+| **Secrets** | Connection String | AWS Secrets Manager |
+| **CI/CD** | Pipeline | GitHub Actions |
+| **Data** | SQL Server | AWS RDS / lokalnie |
 
-| **Presentation** | React 19 (Vite) | Azure Static Web Apps |
+---
 
-| **Application** | API (.NET 9 / Node 24) | Azure App Service |
+## Funkcjonalności
 
-| **Data** | SQL Server (Dev) | Azure SQL Database (Serverless) |
+- Pobieranie danych z bazy (GET)
+- Dodawanie danych (POST)
+- Usuwanie danych (DELETE)
+- Ukrycie connection stringa (Secrets Manager)
+- Testy jednostkowe (xUnit)
+- Automatyczny build i testy (CI/CD)
 
-## 🏗 Status Projektu i Dokumentacja
+---
 
-* [x] **Artefakt 1:** Zaplanowano strukturę folderów i diagram C4 (dostępny w `/docs`).
+## Endpointy API
 
-* [ ] **Artefakt 2:** Konfiguracja środowiska Docker (w trakcie...).
+- `GET /api/tasks`
+- `POST /api/tasks`
+- `DELETE /api/tasks/{id}`
 
-> **Informacja:** Ten plik będzie ewoluował. W kolejnych etapach dodamy tutaj sekcje 'Quick Start', opis zmiennych środowiskowych oraz instrukcję wdrożenia (CI/CD).
- 
+---
+
+## Testy
+
+Projekt zawiera test jednostkowy:
+
+- Sprawdza, czy nowy task nie jest ukończony (`IsCompleted == false`)
+
+Uruchomienie testów:
+```bash
+dotnet test
